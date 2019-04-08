@@ -1,0 +1,1 @@
+(-I %{ocaml-freestanding:lib}% -cclib -lasmrun -cclib -lnolibc -cclib -lopenlibm)
