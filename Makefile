@@ -122,22 +122,19 @@ flags/cflags: flags/cflags.tmp Makeconf
 	    $< > $@
 
 flags/libdir: Makeconf
-	for PKG in $(PKG_CONFIG_DEPS); do \
-		env PKG_CONFIG_PATH=$(shell opam config var prefix)/lib/pkgconfig pkg-config $$PKG --variable=libdir >> flags/libdir;\
-	done
-	echo "/src" >> flags/libdir
+	env PKG_CONFIG_PATH="$(shell opam config var prefix)/lib/pkgconfig" \
+	    pkg-config $(PKG_CONFIG_DEPS) --variable=libdir >> $@
+	sed -i -e '1 s/$$/\/src/' $@
 
 flags/ld: Makeconf
-	for PKG in $(PKG_CONFIG_DEPS); do \
-		env PKG_CONFIG_PATH=$(shell opam config var prefix)/lib/pkgconfig pkg-config $$PKG --variable=ld >> flags/ld;\
-	done
-	if [ -s /tmp/myfile.txt ]; then echo "ld" >> flags/ld; fi
+	env PKG_CONFIG_PATH="$(shell opam config var prefix)/lib/pkgconfig" \
+	    pkg-config $(PKG_CONFIG_DEPS) --variable=ld >> $@
+	if [ ! -s $@ ]; then echo "ld" >> $@; fi
 
 flags/ldflags: Makeconf
-	for PKG in $(PKG_CONFIG_DEPS); do \
-		env PKG_CONFIG_PATH=$(shell opam config var prefix)/lib/pkgconfig pkg-config $$PKG --variable=ldflags >> flags/ldflags;\
-	done
-	sed -i flags/ldflags -e 's/\ /\n/g'
+	env PKG_CONFIG_PATH="$(shell opam config var prefix)/lib/pkgconfig" \
+	    pkg-config $(PKG_CONFIG_DEPS) --variable=ldflags >> $@
+	sed -i flags/ldflags -re 's/(\ )+/\n/g'
 
 install: all
 	./install.sh
