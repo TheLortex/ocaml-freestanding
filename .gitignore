@@ -6,3 +6,4 @@ flags/cflags
 flags/cflags.tmp
 flags/libs
 flags/libs.tmp
+*.o

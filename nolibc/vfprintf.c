@@ -4,9 +4,14 @@
 #include <limits.h>
 #include <string.h>
 #include <stdarg.h>
-#include <math.h>
 #include <float.h>
 #include <stdint.h>
+
+#if defined(__x86_64__) || defined(__aarch64__)
+#include "openlibm.h"
+#else
+#include <math.h>
+#endif
 
 /* Some useful macros */
 
@@ -362,7 +367,7 @@ static int fmt_fp(FILE *f, long double y, int w, int p, int fl, int t)
 		if (z>d+1) z=d+1;
 	}
 	for (; z>a && !z[-1]; z--);
-	
+
 	if ((t|32)=='g') {
 		if (!p) p++;
 		if (p>e && e>=-4) {

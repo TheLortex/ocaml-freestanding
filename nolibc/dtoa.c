@@ -21,7 +21,7 @@
  * ocaml-freestanding.
  */
 
-#if defined(__x86_64__) || defined(__aarch64__)
+#if defined(__x86_64__) || defined(__aarch64__) || defined(__xtensa__)
 #define IEEE_8087
 #define Long int
 #else
@@ -360,7 +360,11 @@ static double private_mem[PRIVATE_mem], *pmem_next = private_mem;
 #endif /* Bad_float_h */
 
 #ifndef __MATH_H__
-#include "math.h"
+#if defined(__x86_64__) || defined(__aarch64__)
+#include "openlibm.h"
+#else
+#include <math.h>
+#endif
 #endif
 
 #ifdef __cplusplus
