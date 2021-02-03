@@ -24,7 +24,7 @@
 (rule
  (target ldflags)
  (action (with-stdout-to %{target} (progn
-  (bash "echo -n \"%{lib:nolibc:libnolibc.a} %{lib:nolibc:libopenlibm.a} \" && solo5-config --target=%{read:mode} --ldflags")
+  (bash "solo5-config --target=%{read:mode} --ldflags")
  )))
 )
 
@@ -33,7 +33,7 @@
  (deps main.exe.o)
  (action
   (bash
-   "$(solo5-config --target=%{read:mode} --ld) main.exe.o -o %{target} %{read:ldflags}")))
+   "$(solo5-config --target=%{read:mode} --ld) main.exe.o -o %{target} %{ocaml-config:native_c_libraries} %{read:ldflags}")))
 
 (rule 
  (alias runtest)

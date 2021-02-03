@@ -10,6 +10,8 @@ TOP=$(abspath .)
 LOCAL_CFLAGS=$(MAKECONF_CFLAGS) -I$(TOP)/nolibc/include -include _freestanding/overrides.h
 # CFLAGS used by the OCaml compiler to build C stubs
 GLOBAL_CFLAGS=$(MAKECONF_CFLAGS) -I$(MAKECONF_PREFIX)/freestanding-sysroot/include/nolibc/ -include _freestanding/overrides.h
+# LIBS used by the OCaml compiler to link executables
+GLOBAL_LIBS=-L$(MAKECONF_PREFIX)/freestanding-sysroot/lib/nolibc/ -lnolibc -lopenlibm $(MAKECONF_EXTRA_LIBS)
 
 # NOLIBC
 NOLIBC_CFLAGS=$(LOCAL_CFLAGS) -I$(TOP)/openlibm/src -I$(TOP)/openlibm/include
@@ -53,6 +55,7 @@ ocaml/Makefile.config: ocaml/Makefile stubs/solo5_stubs.o openlibm/libopenlibm.a
 	sed -i -e 's/otherlibraries="dynlink"/otherlibraries=""/g' ocaml/configure
 	sed -i -e 's/oc_cflags="/oc_cflags="$$OC_CFLAGS /g' ocaml/configure
 	sed -i -e 's/ocamlc_cflags="/ocamlc_cflags="$$OCAMLC_CFLAGS /g' ocaml/configure
+	sed -i -e 's/nativecclibs="$$cclibs $$DLLIBS"/nativecclibs="$$GLOBAL_LIBS"/g' ocaml/configure
 	cd ocaml && \
 		CC="$(MAKECONF_CC)" \
 		OC_CFLAGS="$(OC_CFLAGS)" \
@@ -61,6 +64,7 @@ ocaml/Makefile.config: ocaml/Makefile stubs/solo5_stubs.o openlibm/libopenlibm.a
 		ASPP="$(MAKECONF_CC) $(OC_CFLAGS) -c" \
 		CPPFLAGS="$(OC_CFLAGS)" \
 		LIBS="$(OC_LIBS)"\
+		GLOBAL_LIBS="$(GLOBAL_LIBS)"\
 		LD="$(MAKECONF_LD)" \
 	  ./configure \
 		-host=$(MAKECONF_BUILD_ARCH)-unknown-none \
@@ -103,7 +107,7 @@ ocaml: ocaml/Makefile.config ocaml/runtime/caml/version.h
 
 # CONFIGURATION FILES
 ocaml-freestanding.pc: ocaml-freestanding.pc.in Makeconf
-	sed -e 's!@@PKG_CONFIG_EXTRA_LIBS@@!$(MAKECONF_PKG_CONFIG_EXTRA_LIBS)!' ocaml-freestanding.pc.in |\
+	sed -e 's!@@PKG_CONFIG_EXTRA_LIBS@@!$(MAKECONF_EXTRA_LIBS)!' ocaml-freestanding.pc.in |\
 	sed -e 's!@@CFLAGS@@!$(MAKECONF_CFLAGS)!' > $@
 
 freestanding.conf: freestanding.conf.in
