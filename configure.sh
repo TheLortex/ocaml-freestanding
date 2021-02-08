@@ -63,34 +63,28 @@ MAKECONF_CFLAGS="$(solo5-config --toolchain=$CONFIG_TOOLCHAIN --cflags)"
 MAKECONF_CC="$(solo5-config --toolchain=$CONFIG_TOOLCHAIN --cc)"
 MAKECONF_LD="$(solo5-config --toolchain=$CONFIG_TOOLCHAIN --ld)"
 
-BUILD_ARCH="$(uname -m)"
+BUILD_TRIPLET="$($MAKECONF_CC -dumpmachine)"
 OCAML_BUILD_ARCH=
 AS=
 
 # Canonicalize BUILD_ARCH and set OCAML_BUILD_ARCH. The former is for autoconf,
 # the latter for the rest of the OCaml build system.
-case "${BUILD_ARCH}" in
-    amd64|x86_64)
+case "${BUILD_TRIPLET}" in
+    amd64-*|x86_64-*)
         BUILD_ARCH="x86_64"
         OCAML_BUILD_ARCH="amd64"
         ;;
-    aarch64)
+    aarch64-*)
+        BUILD_ARCH="aarch64"
         OCAML_BUILD_ARCH="arm64"
         ;;
     *)
-        echo "ERROR: Unsupported architecture: ${BUILD_ARCH}" 1>&2
+        echo "ERROR: Unsupported architecture: ${BUILD_TRIPLET}" 1>&2
         exit 1
         ;;
 esac
 
-case "$($MAKECONF_CC -dumpmachine)" in
-    *-*-freebsd*|*-*-openbsd*)
-        AS="$MAKECONF_CC -c"
-        ;;
-    *)
-        AS=as
-        ;;
-esac
+AS="$MAKECONF_CC -c"
 
 EXTRA_LIBS=
 if [ "${BUILD_ARCH}" = "aarch64" ]; then

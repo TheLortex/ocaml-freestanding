@@ -119,6 +119,11 @@ void *sbrk(intptr_t increment)
     return (void *)prev;
 }
 
+int __getauxval(int __unused) {
+    return 0;
+}
+
+
 /*
  * dlmalloc configuration:
  */

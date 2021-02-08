@@ -17,16 +17,30 @@ GLOBAL_LIBS=-L$(MAKECONF_PREFIX)/freestanding-sysroot/lib/nolibc/ -lnolibc -lope
 NOLIBC_CFLAGS=$(LOCAL_CFLAGS) -I$(TOP)/openlibm/src -I$(TOP)/openlibm/include
 nolibc/libnolibc.a:
 	$(MAKE) -C nolibc \
+	    "CC=$(MAKECONF_CC)" \
 	    "FREESTANDING_CFLAGS=$(NOLIBC_CFLAGS)" \
 	    "SYSDEP_OBJS=$(MAKECONF_NOLIBC_SYSDEP_OBJS)"
 
 # OPENLIBM
 openlibm/libopenlibm.a:
-	$(MAKE) -C openlibm "CFLAGS=$(LOCAL_CFLAGS)" libopenlibm.a
+	$(MAKE) -C openlibm \
+	    "CC=$(MAKECONF_CC)" \
+	    "CFLAGS=$(LOCAL_CFLAGS)" \
+	    libopenlibm.a
 
 # OCAML
 ocaml/Makefile:
 	cp -r `ocamlfind query ocaml-src` ./ocaml
+	sed -i -e 's/runtime\/ocamlrun tools/$$(CAMLRUN) tools/g' ocaml/Makefile
+	sed -i -e 's/otherlibraries="dynlink"/otherlibraries=""/g' ocaml/configure
+	sed -i -e 's/oc_cflags="/oc_cflags="$$OC_CFLAGS /g' ocaml/configure
+	sed -i -e 's/ocamlc_cflags="/ocamlc_cflags="$$OCAMLC_CFLAGS /g' ocaml/configure
+	sed -i -e 's/nativecclibs="$$cclibs $$DLLIBS"/nativecclibs="$$GLOBAL_LIBS"/g' ocaml/configure
+	echo -e "ocamlrun:\n\tcp $(shell which ocamlrun) .\n" >> ocaml/runtime/Makefile
+	echo -e "ocamlrund:\n\tcp $(shell which ocamlrund) .\n" >> ocaml/runtime/Makefile
+	echo -e "ocamlruni:\n\tcp $(shell which ocamlruni) .\n" >> ocaml/runtime/Makefile
+	echo -e "ocamlyacc:\n\tcp $(shell which ocamlyacc) .\n" >> ocaml/yacc/Makefile
+	echo -e "objinfo_helper:\n\ttouch objinfo_helper\n" >> ocaml/tools/Makefile
 
 stubs/solo5_stubs.o: stubs/solo5_stubs.c
 	$(MAKECONF_CC) -c $(MAKECONF_CFLAGS) -o $@ $<
@@ -49,13 +63,8 @@ stubs/solo5_stubs.o: stubs/solo5_stubs.c
 # - We override HAS_SOCKETS because of a bug in the ocaml configure script that
 # 	always enables sockets.
 OC_CFLAGS=$(LOCAL_CFLAGS) -I$(TOP)/openlibm/include -I$(TOP)/openlibm/src -nostdlib
-OC_LIBS=-L$(TOP)/nolibc -lnolibc -L$(TOP)/openlibm -lopenlibm $(TOP)/stubs/solo5_stubs.o
+OC_LIBS=-L$(TOP)/nolibc -lnolibc -L$(TOP)/openlibm -lopenlibm $(TOP)/stubs/solo5_stubs.o -nostdlib $(MAKECONF_EXTRA_LIBS)
 ocaml/Makefile.config: ocaml/Makefile stubs/solo5_stubs.o openlibm/libopenlibm.a nolibc/libnolibc.a
-	sed -i -e 's/runtime\/ocamlrun tools/$$(CAMLRUN) tools/g' ocaml/Makefile
-	sed -i -e 's/otherlibraries="dynlink"/otherlibraries=""/g' ocaml/configure
-	sed -i -e 's/oc_cflags="/oc_cflags="$$OC_CFLAGS /g' ocaml/configure
-	sed -i -e 's/ocamlc_cflags="/ocamlc_cflags="$$OCAMLC_CFLAGS /g' ocaml/configure
-	sed -i -e 's/nativecclibs="$$cclibs $$DLLIBS"/nativecclibs="$$GLOBAL_LIBS"/g' ocaml/configure
 	cd ocaml && \
 		CC="$(MAKECONF_CC)" \
 		OC_CFLAGS="$(OC_CFLAGS)" \
@@ -66,6 +75,7 @@ ocaml/Makefile.config: ocaml/Makefile stubs/solo5_stubs.o openlibm/libopenlibm.a
 		LIBS="$(OC_LIBS)"\
 		GLOBAL_LIBS="$(GLOBAL_LIBS)"\
 		LD="$(MAKECONF_LD)" \
+		ac_cv_prog_DIRECT_LD="$(MAKECONF_LD)" \
 	  ./configure \
 		-host=$(MAKECONF_BUILD_ARCH)-unknown-none \
 		-prefix $(MAKECONF_PREFIX)/freestanding-sysroot \
@@ -86,24 +96,8 @@ CAMLRUN:=$(shell which ocamlrun)
 CAMLC:=$(shell which ocamlc)
 
 ocaml: ocaml/Makefile.config ocaml/runtime/caml/version.h
-	$(MAKE) -C ocaml/runtime libasmrun.a libasmrund.a ld.conf
-	$(MAKE) -C ocaml/runtime libcamlrun.a libcamlrund.a -t
-	$(MAKE) -C ocaml expunge ocaml ocamlc.opt ocamlopt.opt CAMLRUN=$(CAMLRUN) CAMLC=$(CAMLC) CAMLOPT=$(CAMLOPT)
-	$(MAKE) -C ocaml library libraryopt CAMLRUN=$(CAMLRUN) CAMLC=$(CAMLC) CAMLOPT=$(CAMLOPT)
-	
-	# stub out the rest
-	cp $(shell which ocamlrun) ocaml/runtime/ocamlrun
-	cp $(shell which ocamlrund) ocaml/runtime/ocamlrund
-	cp $(shell which ocamllex) ocaml/lex/ocamllex
-	cp $(shell which ocamllex.opt) ocaml/lex/ocamllex.opt
-	cp $(shell which ocamlyacc) ocaml/yacc/ocamlyacc
-	touch ocaml/tools/objinfo_helper
-
-	$(MAKE) -C ocaml ocamlyacc ocamllex -t
-	$(MAKE) -C ocaml/tools objinfo_helper -t
-	$(MAKE) -C ocaml/tools ocamlmklib CAMLRUN=$(CAMLRUN) CAMLC=$(CAMLC) CAMLOPT=$(CAMLOPT)
-	$(MAKE) -C ocaml/tools profiling.cmx CAMLRUN=$(CAMLRUN) CAMLC=$(CAMLC) CAMLOPT=$(CAMLOPT)
-	$(MAKE) -C ocaml otherlibraries otherlibrariesopt CAMLRUN=$(CAMLRUN) CAMLC=$(CAMLC) CAMLOPT=$(CAMLOPT)
+	$(MAKE) -C ocaml world
+	$(MAKE) -C ocaml opt
 
 # CONFIGURATION FILES
 ocaml-freestanding.pc: ocaml-freestanding.pc.in Makeconf
@@ -124,6 +118,7 @@ uninstall:
 clean:
 	$(RM) -r ocaml/
 	$(RM) ocaml-freestanding.pc freestanding.conf
+	$(RM) stubs/solo5_stubs.o
 	$(MAKE) -C openlibm clean
 	$(MAKE) -C nolibc \
 	    "FREESTANDING_CFLAGS=$(NOLIBC_CFLAGS)" \
