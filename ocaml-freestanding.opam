@@ -7,7 +7,9 @@ license: "MIT"
 tags: "org:mirage"
 dev-repo: "git+https://github.com/mirage/ocaml-freestanding.git"
 build: [
-  ["./configure.sh" "--prefix=%{prefix}%" "--toolchain=static" { solo5-config-ocaml-static:installed } ]
+  ["./configure.sh" "--prefix=%{prefix}%" 
+    "--target=x86_64-solo5-none-static" { solo5-config-ocaml-static:installed & arch = "x86_64"} 
+    "--target=aarch64-solo5-none-static" { solo5-config-ocaml-static:installed & arch = "arm64"} ]
   [make "-j%{jobs}%"]
 ]
 install: [make "install" ]

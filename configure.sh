@@ -26,8 +26,8 @@ Configures the ocaml-freestanding build system.
 Options:
     --prefix=DIR:
         Installation prefix (default: /usr/local).
-    --toolchain=TOOLCHAIN
-        Solo5 toolchain flags to use.
+    --target=TARGET
+        Solo5 target toolchain flags to use.
 EOM
     exit 1
 }
@@ -37,8 +37,8 @@ while [ $# -gt 0 ]; do
     OPT="$1"
 
     case "${OPT}" in
-        --toolchain=*)
-            CONFIG_TOOLCHAIN="${OPT##*=}"
+        --target=*)
+            CONFIG_TARGET="${OPT##*=}"
             ;;
         --prefix=*)
             MAKECONF_PREFIX="${OPT##*=}"
@@ -55,13 +55,13 @@ while [ $# -gt 0 ]; do
     shift
 done
 
-[ -z "${CONFIG_TOOLCHAIN}" ] && die "The --toolchain option needs to be specified."
+[ -z "${CONFIG_TARGET}" ] && die "The --target option needs to be specified."
 
 ocamlfind query ocaml-src >/dev/null || exit 1
 
-MAKECONF_CFLAGS="$(solo5-config --toolchain=$CONFIG_TOOLCHAIN --cflags)"
-MAKECONF_CC="$(solo5-config --toolchain=$CONFIG_TOOLCHAIN --cc)"
-MAKECONF_LD="$(solo5-config --toolchain=$CONFIG_TOOLCHAIN --ld)"
+MAKECONF_CFLAGS=""
+MAKECONF_CC="$CONFIG_TARGET-cc"
+MAKECONF_LD="$CONFIG_TARGET-ld"
 
 BUILD_TRIPLET="$($MAKECONF_CC -dumpmachine)"
 OCAML_BUILD_ARCH=
