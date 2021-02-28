@@ -8,8 +8,8 @@ tags: "org:mirage"
 dev-repo: "git+https://github.com/mirage/ocaml-freestanding.git"
 build: [
   ["./configure.sh" "--prefix=%{prefix}%" 
-    "--target=x86_64-solo5-none-static" { solo5-config-ocaml-static:installed & arch = "x86_64"} 
-    "--target=aarch64-solo5-none-static" { solo5-config-ocaml-static:installed & arch = "arm64"} ]
+    "--target=x86_64-solo5-none-static" { arch = "x86_64"} 
+    "--target=aarch64-solo5-none-static" { arch = "arm64"} ]
   [make "-j%{jobs}%"]
 ]
 install: [make "install" ]
@@ -19,16 +19,6 @@ depends: [
   "solo5" {>= "0.7.0"}
   "solo5-config-ocaml-static" {>= "0.7.0"}
   "ocaml" {>= "4.10.0" & < "4.13.0"}
-]
-pin-depends: [
-  ["solo5.0.7.0" "git+https://github.com/mato/solo5#split-packages"]
-  ["solo5-bindings-spt.0.7.0" "git+https://github.com/mato/solo5#split-packages"]
-  ["solo5-bindings-hvt.0.7.0" "git+https://github.com/mato/solo5#split-packages"]
-  ["solo5-bindings-muen.0.7.0" "git+https://github.com/mato/solo5#split-packages"]
-  ["solo5-bindings-virtio.0.7.0" "git+https://github.com/mato/solo5#split-packages"]
-  ["solo5-bindings-xen.0.7.0" "git+https://github.com/mato/solo5#split-packages"]
-  ["solo5-bindings-spt.0.7.0" "git+https://github.com/mato/solo5#split-packages"]
-  ["solo5-config-ocaml-static.0.7.0" "git+https://github.com/mato/solo5#split-packages"]
 ]
 conflicts: [
   "sexplib" {= "v0.9.0"}
