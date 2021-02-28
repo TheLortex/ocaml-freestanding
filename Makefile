@@ -27,6 +27,7 @@ openlibm/libopenlibm.a:
 		"USECLANG=1" \
 	    "CC=$(MAKECONF_CC)" \
 	    "CFLAGS=$(LOCAL_CFLAGS)" \
+	    "SFLAGS=-D__ELF__" \
 	    libopenlibm.a
 
 # OCAML
