@@ -88,7 +88,7 @@ AS="$MAKECONF_CC -c"
 
 EXTRA_LIBS=
 if [ "${BUILD_ARCH}" = "aarch64" ]; then
-    EXTRA_LIBS="$EXTRA_LIBS $($MAKECONF_CC -print-libgcc-file-name)" || exit 1
+    EXTRA_LIBS="$EXTRA_LIBS -lgcc" || exit 1
 fi
 
 cat <<EOM >Makeconf
