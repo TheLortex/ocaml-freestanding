@@ -34,12 +34,10 @@ jobs:
         ocaml-version: ${{ matrix.ocaml-version }}
     - name: Pinning package
       run: opam pin add -n -t -y .
-    - name: Depexts
-      run: opam depext -yt ocaml-freestanding conf-libseccomp
-    - name: Install ocaml-freestanding, bindings and dune
-      run: opam install -t -y . solo5-bindings-${{ matrix.mode.name }} dune
+    - name: Install ocaml-freestanding and dune
+      run: opam depext -iyt ocaml-freestanding conf-libseccomp dune
     - name: Compiling example project
       run: MODE=${{ matrix.mode.name }} opam exec -- dune build --root test
     - name: Running example project
       if: ${{ matrix.mode.exec }}
-      run: opam exec -- solo5-${{ matrix.mode.name }} test/_build/freestanding/main.bin || [ $? -eq 1 ]
+      run: opam exec -- solo5-${{ matrix.mode.name }} test/_build/freestanding/main.exe || [ $? -eq 1 ]
