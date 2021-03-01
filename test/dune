@@ -2,9 +2,9 @@
 
 (executable 
  (name main)
- (modes (native object))
+ (modes (native exe))
  (link_flags -g -w +A-4-41-42-44 -bin-annot -strict-sequence -principal
-   -safe-string -color always)
+   -safe-string -color always -cclib (:include solo5_abi))
  (foreign_stubs (language c) (names startup manifest))
 )
 
@@ -21,25 +21,18 @@
   (bash "if [ ! -z \"${MODE+x}\" ]; then echo -n \"$MODE\"; else echo -n \"hvt\"; fi")
 )))
 
-(rule
- (target ldflags)
- (action (with-stdout-to %{target} (progn
-  (bash "solo5-config --target=%{read:mode} --ldflags")
- )))
-)
-
-(rule
- (target main.bin)
- (deps main.exe.o)
- (action
-  (bash
-   "$(solo5-config --target=%{read:mode} --ld) main.exe.o -o %{target} %{ocaml-config:native_c_libraries} %{read:ldflags}")))
+(rule 
+ (target solo5_abi)
+ (deps mode)
+ (action (with-stdout-to %{target}
+  (bash "echo -n \"--solo5-abi=\" && cat mode")
+)))
 
 (rule 
  (alias runtest)
  (enabled_if (= %{context_name} freestanding))
  (action 
-  (with-accepted-exit-codes 1 (run "solo5-%{read:mode}" "%{dep:main.bin}")))
+  (with-accepted-exit-codes 1 (run "solo5-%{read:mode}" "%{dep:main.exe}")))
 )
 
 (alias 
