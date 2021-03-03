@@ -24,10 +24,8 @@ nolibc/libnolibc.a:
 # OPENLIBM
 openlibm/libopenlibm.a:
 	$(MAKE) -C openlibm \
-		"USECLANG=1" \
 	    "CC=$(MAKECONF_CC)" \
-	    "CFLAGS=$(LOCAL_CFLAGS)" \
-	    "SFLAGS=-D__ELF__" \
+		"CPPFLAGS=$(LOCAL_CFLAGS)" \
 	    libopenlibm.a
 
 # OCAML
