@@ -42,9 +42,6 @@ ocaml/Makefile:
 	echo -e "ocamlyacc:\n\tcp $(shell which ocamlyacc) .\n" >> ocaml/yacc/Makefile
 	echo -e "objinfo_helper:\n\ttouch objinfo_helper\n" >> ocaml/tools/Makefile
 
-stubs/solo5_stubs.o: stubs/solo5_stubs.c
-	$(MAKECONF_CC) -c $(MAKECONF_CFLAGS) -o $@ $<
-
 # OCaml >= 4.08.0 uses an autotools-based build system. In this case we
 # convince it to think it's using the Solo5 compiler as a cross compiler, and
 # let the build system do its work with as little additional changes on our
@@ -63,8 +60,8 @@ stubs/solo5_stubs.o: stubs/solo5_stubs.c
 # - We override HAS_SOCKETS because of a bug in the ocaml configure script that
 # 	always enables sockets.
 OC_CFLAGS=$(LOCAL_CFLAGS) -I$(TOP)/openlibm/include -I$(TOP)/openlibm/src -nostdlib
-OC_LIBS=-L$(TOP)/nolibc -lnolibc -L$(TOP)/openlibm -lopenlibm $(TOP)/stubs/solo5_stubs.o -nostdlib $(MAKECONF_EXTRA_LIBS)
-ocaml/Makefile.config: ocaml/Makefile stubs/solo5_stubs.o openlibm/libopenlibm.a nolibc/libnolibc.a
+OC_LIBS=-L$(TOP)/nolibc -lnolibc -L$(TOP)/openlibm -lopenlibm -nostdlib $(MAKECONF_EXTRA_LIBS)
+ocaml/Makefile.config: ocaml/Makefile openlibm/libopenlibm.a nolibc/libnolibc.a
 	cd ocaml && \
 		CC="$(MAKECONF_CC)" \
 		OC_CFLAGS="$(OC_CFLAGS)" \
@@ -118,7 +115,6 @@ uninstall:
 clean:
 	$(RM) -r ocaml/
 	$(RM) ocaml-freestanding.pc freestanding.conf
-	$(RM) stubs/solo5_stubs.o
 	$(MAKE) -C openlibm clean
 	$(MAKE) -C nolibc \
 	    "FREESTANDING_CFLAGS=$(NOLIBC_CFLAGS)" \
