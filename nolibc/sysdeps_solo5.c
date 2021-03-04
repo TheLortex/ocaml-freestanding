@@ -119,7 +119,8 @@ void *sbrk(intptr_t increment)
     return (void *)prev;
 }
 
-int __getauxval(int __unused) {
+int __getauxval(int unused) {
+    errno = ENOENT;
     return 0;
 }
 
