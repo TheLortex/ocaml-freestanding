@@ -32,6 +32,7 @@ openlibm/libopenlibm.a:
 ocaml/Makefile:
 	cp -r `ocamlfind query ocaml-src` ./ocaml
 	sed -i -e 's/runtime\/ocamlrun tools/$$(CAMLRUN) tools/g' ocaml/Makefile
+	sed -i -e 's/$$(MAKE) -C ocamltest all//g' ocaml/Makefile
 	sed -i -e 's/otherlibraries="dynlink"/otherlibraries=""/g' ocaml/configure
 	sed -i -e 's/oc_cflags="/oc_cflags="$$OC_CFLAGS /g' ocaml/configure
 	sed -i -e 's/ocamlc_cflags="/ocamlc_cflags="$$OCAMLC_CFLAGS /g' ocaml/configure
