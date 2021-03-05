@@ -21,6 +21,6 @@ char *strstr(const char *, const char *);
 /*
  * The following definitions are required for the OCaml bytecode runtime.
  */
-int *strncmp(const char*, const char*, size_t);
+int strncmp(const char*, const char*, size_t);
 
 #endif
