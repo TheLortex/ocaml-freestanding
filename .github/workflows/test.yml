@@ -20,12 +20,14 @@ jobs:
         include:
           - operating-system: ubuntu-latest 
             ocaml-version: 4.11.2
-            name: spt
-            exec: true
+            mode:
+              - name: spt
+                exec: true
           - operating-system: ubuntu-latest
             ocaml-version: 4.10.2
-            name: spt
-            exec: true
+            mode:
+              - name: spt
+                exec: true
     runs-on: ${{ matrix.operating-system }}
     steps:
     - uses: actions/checkout@v2
